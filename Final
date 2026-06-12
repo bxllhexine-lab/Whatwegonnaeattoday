@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Food Assistant — ร้านอาหารย่านสยาม | Siam Restaurant Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#171019; --panel:#211826; --panel2:#2a1f30; --line:#3a2c40;
+  --cream:#f3e9d7; --muted:#a898ae; --dim:#7c6d83;
+  --gold:#f2b53d; --chili:#e8503f; --jade:#46c98e;
+  --sky:#6ec1e4; --violet:#b08ae8; --pink:#f08bb4;
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--cream);font-family:'Sarabun',sans-serif;font-size:16px;line-height:1.65}
+h1,h2,h3,.disp{font-family:'Prompt',sans-serif}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+/* ── Hero ── */
+.hero{position:relative;padding:64px 0 44px;border-bottom:1px solid var(--line);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:
+  radial-gradient(600px 280px at 85% -10%,rgba(242,181,61,.14),transparent 60%),
+  radial-gradient(500px 260px at 5% 110%,rgba(232,80,63,.10),transparent 60%);pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:'Prompt';font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(242,181,61,.35);padding:6px 14px;border-radius:999px;margin-bottom:18px}
+.eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold)}
+.hero h1{font-size:clamp(30px,4.6vw,52px);font-weight:800;line-height:1.15;letter-spacing:-.01em}
+.hero h1 .accent{color:var(--gold)}
+.hero .sub{margin-top:14px;max-width:640px;color:var(--muted);font-size:17px}
+.hero-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:36px;align-items:center;position:relative}
+.brief-chit{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px 24px;position:relative}
+.brief-chit::before{content:"โจทย์";position:absolute;top:-11px;left:18px;background:var(--chili);color:#fff;font-family:'Prompt';font-size:12px;font-weight:600;letter-spacing:.1em;padding:2px 12px;border-radius:6px}
+.brief-chit ul{list-style:none;margin-top:6px}
+.brief-chit li{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.brief-chit li:last-child{border-bottom:none}
+.brief-chit .k{color:var(--dim);min-width:86px;font-weight:600}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13.5px;color:var(--muted)}
+.chip b{color:var(--cream);font-weight:600}
+.chip .dot{width:8px;height:8px;border-radius:50%}
+.dot.ok{background:var(--jade)}.dot.warn{background:var(--gold)}
+.btn{cursor:pointer;font-family:'Prompt';font-weight:600;font-size:14px;border:none;border-radius:10px;padding:10px 18px;transition:.18s}
+.btn-gold{background:var(--gold);color:#241a08}
+.btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.btn-ghost:hover{color:var(--cream);border-color:var(--dim)}
+
+/* ── Sections ── */
+section{padding:52px 0}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.sec-head h2{font-size:26px;font-weight:700}
+.sec-head h2 .tag{color:var(--chili);margin-right:10px}
+.sec-head .note{color:var(--dim);font-size:14px}
+
+/* ── KPI ── */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:-26px;position:relative;z-index:2}
+.kpi{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.kpi .v{font-family:'Prompt';font-size:30px;font-weight:700;color:var(--gold)}
+.kpi .l{color:var(--muted);font-size:13.5px;margin-top:2px}
+
+/* ── Top 3 ── */
+.top3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:24px;position:relative;display:flex;flex-direction:column;gap:14px;transition:.2s}
+.card:hover{transform:translateY(-3px);border-color:rgba(242,181,61,.45)}
+.card.r1{border-color:rgba(242,181,61,.6);background:linear-gradient(170deg,rgba(242,181,61,.07),var(--panel) 45%)}
+.medal{position:absolute;top:-14px;left:20px;font-family:'Prompt';font-weight:700;font-size:13px;padding:4px 14px;border-radius:8px;color:#241a08}
+.r1 .medal{background:var(--gold)}.r2 .medal{background:#cfc4d6;}.r3 .medal{background:#d99e6a}
+.card h3{font-size:20px;line-height:1.3;margin-top:8px}
+.card .meta{display:flex;flex-wrap:wrap;gap:7px}
+.pill{font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 11px;color:var(--muted)}
+.score-row{display:flex;align-items:center;gap:16px}
+.ring{--p:0;width:84px;height:84px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--gold) calc(var(--p)*1%),var(--panel2) 0)}
+.ring::before{content:"";position:absolute;width:66px;height:66px;border-radius:50%;background:var(--panel)}
+.ring span{position:relative;font-family:'Prompt';font-weight:700;font-size:20px}
+.ring small{position:absolute;margin-top:36px;font-size:10px;color:var(--dim)}
+.sbar{flex:1}
+.sbar .strip{display:flex;height:14px;border-radius:7px;overflow:hidden;border:1px solid var(--line)}
+.sbar .strip i{display:block;height:100%}
+.sbar .legend{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:8px;font-size:11px;color:var(--dim)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
+.why{font-size:14.5px;color:var(--muted)}
+.why b{color:var(--cream)}
+.tradeoff{display:grid;gap:6px;font-size:13.5px;border-top:1px dashed var(--line);padding-top:12px}
+.tradeoff .good::before{content:"✓ ";color:var(--jade);font-weight:700}
+.tradeoff .bad::before{content:"⚠ ";color:var(--chili)}
+.tradeoff div{color:var(--muted)}
+
+/* ── Charts ── */
+.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+.charts .panel:first-child{grid-row:span 2}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.panel h4{font-family:'Prompt';font-size:15px;font-weight:600;color:var(--muted);margin-bottom:14px}
+.chart-box{position:relative;height:280px}
+.charts .panel:first-child .chart-box{height:620px}
+
+/* ── Map ── */
+.map-panel iframe{width:100%;height:420px;border:0;border-radius:10px;filter:saturate(.9) contrast(1.02)}
+
+/* ── Table ── */
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.controls input,.controls select{background:var(--panel);border:1px solid var(--line);color:var(--cream);border-radius:10px;padding:9px 14px;font-family:'Sarabun';font-size:14px;outline:none}
+.controls input{flex:1;min-width:200px}
+.controls input:focus,.controls select:focus{border-color:var(--gold)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:980px}
+thead th{position:sticky;top:0;background:var(--panel2);font-family:'Prompt';font-weight:600;font-size:12px;color:var(--muted);text-align:left;padding:12px 12px;cursor:pointer;user-select:none;white-space:nowrap;border-bottom:1px solid var(--line)}
+thead th:hover{color:var(--gold)}
+thead th .arr{opacity:.5;font-size:10px}
+tbody td{padding:10px 12px;border-bottom:1px solid rgba(58,44,64,.55);white-space:nowrap}
+tbody tr:hover{background:rgba(242,181,61,.05)}
+tbody tr:nth-child(-n+3) td:first-child{color:var(--gold);font-weight:700}
+.minibar{display:inline-flex;height:9px;width:120px;border-radius:5px;overflow:hidden;border:1px solid var(--line);vertical-align:middle}
+.minibar i{height:100%}
+td .score{font-family:'Prompt';font-weight:700;color:var(--gold)}
+.src-tag{font-size:11px;padding:2px 8px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+.src-tag.dual{border-color:rgba(70,201,142,.5);color:var(--jade)}
+.count-note{margin-top:10px;color:var(--dim);font-size:13px}
+
+/* ── Methodology ── */
+.meth-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.wtable{width:100%;border-collapse:collapse;font-size:14px}
+.wtable th{font-family:'Prompt';font-size:12px;color:var(--muted);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+.wtable td{padding:9px 10px;border-bottom:1px solid rgba(58,44,64,.5);color:var(--muted)}
+.wtable td:first-child{color:var(--cream)}
+.wtable .w{font-family:'Prompt';font-weight:700;color:var(--gold)}
+.pipe{display:flex;flex-direction:column;gap:0;margin-top:6px}
+.pstep{display:flex;gap:14px;align-items:flex-start;position:relative;padding-bottom:18px}
+.pstep::before{content:"";position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--line)}
+.pstep:last-child::before{display:none}
+.pstep .ic{width:32px;height:32px;flex:none;border-radius:9px;display:grid;place-items:center;font-size:15px;background:var(--panel2);border:1px solid var(--line)}
+.pstep .tx b{font-family:'Prompt';font-size:14.5px;display:block}
+.pstep .tx span{font-size:13px;color:var(--dim)}
+.badge-n8n{display:inline-block;font-size:11px;background:rgba(232,80,63,.15);color:var(--chili);border:1px solid rgba(232,80,63,.4);padding:2px 9px;border-radius:6px;margin-left:8px;font-family:'Prompt';font-weight:600}
+.src-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.src-card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.src-card b{font-family:'Prompt';font-size:14.5px;display:block}
+.src-card span{font-size:13px;color:var(--dim)}
+.src-card .n{font-family:'Prompt';font-size:24px;font-weight:700;color:var(--gold);float:right}
+
+/* ── Reflection ── */
+.refl{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.refl .panel h4{color:var(--gold);font-size:16px}
+.refl ul{list-style:none;display:grid;gap:9px}
+.refl li{font-size:14.5px;color:var(--muted);padding-left:20px;position:relative}
+.refl li::before{content:"—";position:absolute;left:0;color:var(--chili)}
+.refl li b{color:var(--cream)}
+
+footer{border-top:1px solid var(--line);padding:30px 0 44px;color:var(--dim);font-size:13.5px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:14px 20px;font-size:14px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;z-index:99}
+.toast.show{opacity:1;transform:none}
+
+@media(max-width:980px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .top3,.charts,.meth-grid,.refl,.hero-grid{grid-template-columns:1fr}
+  .charts .panel:first-child{grid-row:auto}
+  .charts .panel:first-child .chart-box{height:380px}
+  .src-cards{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff;color:#1c1320}
+  .btn,.controls,.toast{display:none!important}
+  .panel,.card,.kpi{border-color:#ccc;background:#fff}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">AI Workflow Challenge · Task 3 · AI Food Assistant</div>
+    <div class="hero-grid">
+      <div>
+        <h1>ร้านอาหารย่าน<span class="accent">สยาม</span><br>คัดแล้วด้วยข้อมูลจริง 2 แหล่ง</h1>
+        <p class="sub">ระบบผู้ช่วยหาร้านอาหารสำหรับมื้อทีม — เก็บข้อมูลอัตโนมัติจาก Google Maps + Wongnai ผ่าน Apify และ Browse AI ทำความสะอาดและให้คะแนนตามเกณฑ์ 6 ด้าน อัปเดตทุกสัปดาห์ด้วย n8n</p>
+        <div class="hero-meta">
+          <span class="chip"><span class="dot ok"></span>อัปเดตล่าสุด <b id="lastUpdated">11 มิ.ย. 2026</b></span>
+          <span class="chip"><span class="dot warn"></span>แหล่งข้อมูล <b id="dataMode">Embedded snapshot</b></span>
+          <button class="btn btn-gold" id="btnRefresh">⟳ ดึงข้อมูลล่าสุดจาก Google Sheets</button>
+        </div>
+      </div>
+      <div class="brief-chit">
+        <ul>
+          <li><span class="k">พื้นที่</span><span>สยาม / ปทุมวัน — เดินจาก BTS สยาม</span></li>
+          <li><span class="k">กลุ่ม</span><span>ทีม 4–6 คน ทานมื้อกลางวัน/เย็นร่วมกัน</span></li>
+          <li><span class="k">งบประมาณ</span><span>~200–500 บาท/คน (฿–฿฿฿)</span></li>
+          <li><span class="k">เงื่อนไข</span><span>รีวิว ≥ 20 · หมวดร้านอาหารเท่านั้น</span></li>
+          <li><span class="k">เป้าหมาย</span><span>Top 3 ที่อร่อย คุ้ม เดินถึง นั่งได้ทั้งทีม</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="kpis" style="margin-top:26px">
+    <div class="kpi"><div class="v" id="kpiTotal">—</div><div class="l">ร้านที่ผ่านเกณฑ์</div></div>
+    <div class="kpi"><div class="v" id="kpiAvg">—</div><div class="l">คะแนนเฉลี่ย / 100</div></div>
+    <div class="kpi"><div class="v" id="kpiTop">—</div><div class="l">คะแนนสูงสุด</div></div>
+    <div class="kpi"><div class="v">2</div><div class="l">แหล่งข้อมูล (GM + Wongnai)</div></div>
+    <div class="kpi"><div class="v">ทุกจันทร์</div><div class="l">รันอัตโนมัติด้วย n8n 08:00</div></div>
+  </div>
+</div>
+
+<section id="top3">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2><span class="tag">①</span>Top 3 ร้านแนะนำ</h2>
+      <span class="note">จัดอันดับจากคะแนนรวม 100 — พร้อมเหตุผลและข้อแลกเปลี่ยน</span>
+    </div>
+    <div class="top3" id="top3Cards"></div>
+  </div>
+</section>
+
+<section id="charts" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2><span class="tag">②</span>ภาพรวมข้อมูล</h2>
+    </div>
+    <div class="charts">
+      <div class="panel"><h4>Top 10 คะแนนรวม (แยกตามเกณฑ์ 6 ด้าน)</h4><div class="chart-box"><canvas id="chTop10"></canvas></div></div>
+      <div class="panel"><h4>การกระจายช่วงราคา</h4><div class="chart-box"><canvas id="chPrice"></canvas></div></div>
+      <div class="panel"><h4>ประเภทอาหารยอดนิยม (Top 8)</h4><div class="chart-box"><canvas id="chCuisine"></canvas></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="map" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2><span class="tag">③</span>แผนที่ย่านสยาม</h2>
+      <span class="note">ทุกร้านอยู่ในรัศมีเดินจาก BTS สยาม — กดลิงก์ในตารางเพื่อเปิดตำแหน่งร้าน</span>
+    </div>
+    <div class="panel map-panel">
+      <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://maps.google.com/maps?q=Siam%20Square%2C%20Bangkok&z=17&output=embed"></iframe>
+    </div>
+  </div>
+</section>
+
+<section id="ranking" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2><span class="tag">④</span>ตารางจัดอันดับทั้งหมด</h2>
+      <span class="note">คลิกหัวคอลัมน์เพื่อเรียงลำดับ</span>
+    </div>
+    <div class="controls">
+      <input id="q" type="search" placeholder="ค้นหาชื่อร้าน / ประเภทอาหาร…">
+      <select id="fPrice"><option value="">ทุกช่วงราคา</option><option value="฿">฿ · ต่ำกว่า 100.-/คน</option><option value="฿฿">฿฿ · 100–250.-/คน</option><option value="฿฿฿">฿฿฿ · 250–500.-/คน</option><option value="฿฿฿฿">฿฿฿฿ · 500–1,000.-/คน</option></select>
+      <select id="fSrc"><option value="">ทุกแหล่งข้อมูล</option><option value="dual">2 แหล่ง (ตรงกัน)</option><option value="google">Google Maps</option><option value="wongnai">Wongnai</option></select>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tbl">
+        <thead><tr>
+          <th data-k="rank">#<span class="arr"> ▾</span></th>
+          <th data-k="restaurant_name">ร้าน<span class="arr"></span></th>
+          <th data-k="cuisine_type">ประเภท<span class="arr"></span></th>
+          <th data-k="avg_rating">เรตติ้ง<span class="arr"></span></th>
+          <th data-k="total_reviews">รีวิว<span class="arr"></span></th>
+          <th data-k="price_range">ราคา<span class="arr"></span></th>
+          <th data-k="walk_minutes">เดิน (นาที)<span class="arr"></span></th>
+          <th>คะแนนย่อย S1–S6</th>
+          <th data-k="total_score">รวม<span class="arr"> ▾</span></th>
+          <th>แหล่ง</th>
+          <th>ลิงก์</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="count-note" id="countNote"></div>
+  </div>
+</section>
+
+<section id="method" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head"><h2><span class="tag">⑤</span>วิธีคิดคะแนน & ที่มาของข้อมูล</h2></div>
+    <div class="meth-grid">
+      <div class="panel">
+        <h4>Scoring Model — รวม 100 คะแนน</h4>
+        <table class="wtable">
+          <tr><th>เกณฑ์</th><th>น้ำหนัก</th><th>วิธีคำนวณ</th></tr>
+          <tr><td>S1 · Rating & Review</td><td class="w">25</td><td>(rating/5)×15 + (reviews/2000)×10</td></tr>
+          <tr><td>S2 · Group Suitability</td><td class="w">20</td><td>ประเภทอาหารเหมาะกลุ่ม + ทำเลห้าง + ความนิยม</td></tr>
+          <tr><td>S3 · Price Suitability</td><td class="w">15</td><td>฿฿ (100–250.-/คน) = 15 · ฿ (&lt;100.-) = 14 · ฿฿฿ (250–500.-) = 13 · ฿฿฿฿ (500–1,000.-) = 7</td></tr>
+          <tr><td>S4 · Travel Convenience</td><td class="w">15</td><td>นาทีเดินจาก BTS สยาม (Haversine จากพิกัดจริง)</td></tr>
+          <tr><td>S5 · Data Completeness</td><td class="w">15</td><td>สัดส่วนคอลัมน์ครบจาก 12 ฟิลด์ที่กำหนด</td></tr>
+          <tr><td>S6 · Uniqueness</td><td class="w">10</td><td>ประเภทอาหารยิ่งหายากในย่าน ยิ่งได้คะแนน</td></tr>
+        </table>
+        <div class="src-cards">
+          <div class="src-card"><span class="n">199→75</span><b>Apify · Google Maps</b><span>crawler-google-places · กรอง Pathum Wan, หมวดร้านอาหาร, รีวิว ≥ 20</span></div>
+          <div class="src-card"><span class="n">40</span><b>Browse AI · Wongnai</b><span>robot ดึง listing "restaurants-in-siam-area" ผ่าน REST API</span></div>
+          <div class="src-card"><span class="n">35</span><b>Cleaned & Merged</b><span>dedup ด้วยชื่อร้าน · จับคู่ข้ามแหล่ง 4 ร้าน</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h4>Automation Pipeline <span class="badge-n8n">n8n · ทุกจันทร์ 08:00</span></h4>
+        <div class="pipe">
+          <div class="pstep"><div class="ic">🌐</div><div class="tx"><b>Apify Google Maps Scraper</b><span>ดึงข้อมูลร้าน 80 รายการ → Tag source</span></div></div>
+          <div class="pstep"><div class="ic">📄</div><div class="tx"><b>Write Raw → Google Sheets</b><span>tab "Raw data from Apify google map"</span></div></div>
+          <div class="pstep"><div class="ic">🤖</div><div class="tx"><b>Browse AI Wongnai Results</b><span>REST API ดึง 40 ร้าน · กรอง _STATUS=REMOVED · แกะพิกัดจาก Map Link</span></div></div>
+          <div class="pstep"><div class="ic">📄</div><div class="tx"><b>Write Raw → Google Sheets</b><span>tab "Raw data from Apify WEB"</span></div></div>
+          <div class="pstep"><div class="ic">🧹</div><div class="tx"><b>Clean & Map 12 Columns</b><span>รวม 2 แหล่งใน memory · dedup · คำนวณระยะเดิน BTS</span></div></div>
+          <div class="pstep"><div class="ic">📊</div><div class="tx"><b>Scoring Engine → Sheets</b><span>ให้คะแนน 6 เกณฑ์ · จัด rank · tab "Scoring Data"</span></div></div>
+          <div class="pstep"><div class="ic">🖥️</div><div class="tx"><b>HTML Report (หน้านี้)</b><span>กดปุ่มดึงข้อมูลล่าสุดจาก Scoring Data ได้ทันที</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="reflection" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head"><h2><span class="tag">⑥</span>Reflection — สิ่งที่ทำจริงและบทเรียน</h2></div>
+    <div class="refl">
+      <div class="panel">
+        <h4>ปัญหาที่เจอ → วิธีแก้</h4>
+        <ul>
+          <li><b>Apify Web Scraper ติด Forbidden (403)</b> กับ Wongnai — เปลี่ยนไปใช้ Browse AI robot ที่เทรนไว้ แล้วดึงผ่าน REST API ด้วย Bearer token แทน</li>
+          <li><b>n8n Merge node ค้าง</b> เพราะ 2 branch แบบ parallel รอกันไม่จบ — ปรับ flow เป็น sequential เส้นเดียว แล้วให้ Clean node อ้างอิงข้อมูลข้าม node ด้วย <b>$('Node').all()</b> ใน memory</li>
+          <li><b>HTTP Request ยิงซ้ำตามจำนวน input items</b> (80 ครั้ง) — เปิด <b>Execute Once</b> ใน node settings</li>
+          <li><b>Google Sheets append สะสมซ้ำทุกรอบ test</b> จน Read ค้างที่ 12,800 แถว — เคลียร์ sheet และตัด Read node ที่ไม่จำเป็นออกจาก chain</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h4>ข้อจำกัด & สิ่งที่ได้เรียนรู้</h4>
+        <ul>
+          <li><b>ข้อจำกัดข้อมูล:</b> บางร้านจาก Google Maps ไม่มีพิกัด/ช่วงราคา ทำให้ S4 ใช้ค่าประมาณจากชื่อทำเล และ Wongnai จำกัดที่ 40 ร้านต่อ listing</li>
+          <li><b>คะแนนอ่อนไหวต่อความครบของข้อมูล</b> — ร้านที่จับคู่ได้ 2 แหล่ง (เช่น ครัวดอกไม้ขาว) ได้เปรียบ S5 อย่างมีนัยสำคัญ ซึ่งสะท้อนความน่าเชื่อถือจริง</li>
+          <li><b>AI แนะนำผิดแล้วแก้ยังไง:</b> AI เคยแนะ actor ที่ใช้ไม่ได้กับ free plan — ตรวจ error message จริง อ่าน docs ของ Browse AI แล้วเปลี่ยน auth format จนผ่าน</li>
+          <li><b>นำไปใช้ต่อ:</b> pattern "scrape → raw → clean → score → report" reuse ได้กับงานเปรียบเทียบ vendor/partner ของทีม Integration ทันที</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>AI Workflow Challenge — Task 3 · Siam Restaurant Finder · จัดทำด้วย Apify · Browse AI · Google Sheets · n8n · Claude</span>
+    <span><a href="https://docs.google.com/spreadsheets/d/1d9oO_xXgxsmEw7IS-hNePCPXA001TwwwqfPRJeTxWG0/edit" target="_blank">เปิด Google Sheets ↗</a></span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_ID = "1d9oO_xXgxsmEw7IS-hNePCPXA001TwwwqfPRJeTxWG0";
+const SHEET_TAB = "Scoring Data";
+const SEG_COLORS = ["#f2b53d","#e8503f","#46c98e","#6ec1e4","#b08ae8","#f08bb4"];
+const SEG_KEYS = ["s1_rating_review","s2_group_suitability","s3_price","s4_travel","s5_completeness","s6_uniqueness"];
+const SEG_LABELS = ["S1 รีวิว","S2 กลุ่ม","S3 ราคา","S4 เดินทาง","S5 ข้อมูลครบ","S6 ความต่าง"];
+const SEG_MAX = [25,20,15,15,15,10];
+const PRICE_LABEL = {"฿":"ต่ำกว่า 100.-","฿฿":"100–250.-","฿฿฿":"250–500.-","฿฿฿฿":"500–1,000.-","฿฿฿฿฿":"1,000.-ขึ้นไป"};
+
+const EMBEDDED = [{"rank":1,"restaurant_name":"ครัวดอกไม้ขาว","location":"Siam Square One","avg_rating":4.15,"total_reviews":1901,"price_range":"฿฿฿","cuisine_type":"อาหารไทย","latitude":13.75,"longitude":100.53,"google_url":"https://www.google.com/maps/search/?api=1&query=White%20Flower%20Factory%20-%20%E0%B8%84%E0%B8%A3%E0%B8%B1%E0%B8%A7%E0%B8%94%E0%B8%AD%E0%B8%81%E0%B9%84%E0%B8%A1%E0%B9%89%E0%B8%82%E0%B8%B2%E0%B8%A7&query_place_id=ChIJ937RdtKe4jARPRuzBAQLNxc","wongnai_url":"https://www.wongnai.com/restaurants/157461dj-%E0%B8%84%E0%B8%A3%E0%B8%B1%E0%B8%A7%E0%B8%94%E0%B8%AD%E0%B8%81%E0%B9%84%E0%B8%A1%E0%B9%89%E0%B8%82%E0%B8%B2%E0%B8%A7-siam-square-one","source":"Wongnai + Google Maps","distance_bts_m":47,"walk_minutes":1,"data_completeness":"12/12","s1_rating_review":21.96,"s2_group_suitability":16,"s3_price":13,"s4_travel":15,"s5_completeness":15,"s6_uniqueness":10,"total_score":90.96},{"rank":2,"restaurant_name":"KaoKaoBom Samgyupsal Mala Tang","location":"Floor 4, Siam Square One Unit SS #4024, 388 Rama I Rd","avg_rating":4.8,"total_reviews":3973,"price_range":null,"cuisine_type":"Korean","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=KaoKaoBom%20Samgyupsal%20Mala%20Tang&query_place_id=ChIJI56e6E2f4jARYR2F7HN3K50","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":24.4,"s2_group_suitability":18,"s3_price":8,"s4_travel":14,"s5_completeness":11.67,"s6_uniqueness":6,"total_score":82.07},{"rank":3,"restaurant_name":"SUSHI SEKI (Siam Paragon)","location":"5th Floor, Siam Paragon, Rama I Rd","avg_rating":4.8,"total_reviews":2287,"price_range":null,"cuisine_type":"Japanese","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=SUSHI%20SEKI%20(Siam%20Paragon)&query_place_id=ChIJtUJPwlif4jARmCxyjz2C4nM","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":24.4,"s2_group_suitability":15,"s3_price":8,"s4_travel":14,"s5_completeness":11.67,"s6_uniqueness":8,"total_score":81.07},{"rank":4,"restaurant_name":"Hongdae Buffet Siam Square One","location":"Unit #SS 5018 - 19, 388 Rama I Rd","avg_rating":4.8,"total_reviews":5864,"price_range":null,"cuisine_type":"Buffet","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Hongdae%20Buffet%20Siam%20Square%20One&query_place_id=ChIJkSRYFdKe4jARHuKV60eqRT4","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":24.4,"s2_group_suitability":18,"s3_price":8,"s4_travel":8,"s5_completeness":11.67,"s6_uniqueness":10,"total_score":80.07},{"rank":5,"restaurant_name":"เสือโหย ท่าสยาม","location":"430/5 10 Siam Square Soi 2","avg_rating":4.9,"total_reviews":2071,"price_range":null,"cuisine_type":"Noodle shop","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=%E0%B9%80%E0%B8%AA%E0%B8%B7%E0%B8%AD%E0%B9%82%E0%B8%AB%E0%B8%A2%20%E0%B8%97%E0%B9%88%E0%B8%B2%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1&query_place_id=ChIJewJviWGf4jARYafHgFvNBE8","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":24.7,"s2_group_suitability":13,"s3_price":8,"s4_travel":12,"s5_completeness":11.67,"s6_uniqueness":10,"total_score":79.37},{"rank":6,"restaurant_name":"Tonkotsu Kazan Ramen","location":"สยามเซ็นเตอร์","avg_rating":4.3,"total_reviews":2019,"price_range":"฿฿฿","cuisine_type":"อาหารญี่ปุ่น","latitude":13.75,"longitude":100.53,"google_url":"https://www.google.com/maps/search/?api=1&query=Tonkotsu%20Kazan%20Ramen%20(Siam%20Center)&query_place_id=ChIJAz46NDyf4jARAQh-S7JzF20","wongnai_url":"https://www.wongnai.com/restaurants/395016Fo-tonkotsu-kazan-ramen-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1%E0%B9%80%E0%B8%8B%E0%B9%87%E0%B8%99%E0%B9%80%E0%B8%95%E0%B8%AD%E0%B8%A3%E0%B9%8C","source":"Wongnai + Google Maps","distance_bts_m":226,"walk_minutes":3,"data_completeness":"12/12","s1_rating_review":22.9,"s2_group_suitability":12,"s3_price":13,"s4_travel":12,"s5_completeness":15,"s6_uniqueness":4,"total_score":78.9},{"rank":7,"restaurant_name":"Kouen Sushi Bar","location":"Siam Square One ชั้น 5","avg_rating":4.05,"total_reviews":2000,"price_range":"฿฿฿฿","cuisine_type":"อาหารญี่ปุ่น","latitude":13.75,"longitude":100.53,"google_url":"https://www.google.com/maps/search/?api=1&query=Kouen%20Sushi%20Bar%20%7C%20Siam%20Square%201&query_place_id=ChIJt8xtcNKe4jARkhUNdyD2KrQ","wongnai_url":"https://www.wongnai.com/restaurants/229418sS-kouen-sushi-bar-siam-square-one-%E0%B8%8A%E0%B8%B1%E0%B9%89%E0%B8%99-5","source":"Wongnai + Google Maps","distance_bts_m":75,"walk_minutes":1,"data_completeness":"12/12","s1_rating_review":22.15,"s2_group_suitability":15,"s3_price":7,"s4_travel":15,"s5_completeness":15,"s6_uniqueness":4,"total_score":78.15},{"rank":8,"restaurant_name":"สวนผัก โอ้กะจู๋","location":"Siam Square One ชั้น3","avg_rating":4.3,"total_reviews":371,"price_range":"฿฿฿","cuisine_type":"อาหารคลีน/สลัด","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/297987Cb-%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B8%9C%E0%B8%B1%E0%B8%81-%E0%B9%82%E0%B8%AD%E0%B9%89%E0%B8%81%E0%B8%B0%E0%B8%88%E0%B8%B9%E0%B9%8B-siam-square-one-%E0%B8%8A%E0%B8%B1%E0%B9%89%E0%B8%993","source":"Wongnai","distance_bts_m":51,"walk_minutes":1,"data_completeness":"10/12","s1_rating_review":14.76,"s2_group_suitability":12,"s3_price":13,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":10,"total_score":78.09},{"rank":9,"restaurant_name":"Katsu Kitchen カツキッチン","location":"ชั้น 4 FL Centerpoint of Siam Square 292 Rama I Rd","avg_rating":4.8,"total_reviews":1765,"price_range":null,"cuisine_type":"Japanese","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Katsu%20Kitchen%20%E3%82%AB%E3%83%84%E3%82%AD%E3%83%83%E3%83%81%E3%83%B3&query_place_id=ChIJP_1NeQCf4jARWWt6xmdmEy8","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":23.22,"s2_group_suitability":15,"s3_price":8,"s4_travel":12,"s5_completeness":11.67,"s6_uniqueness":8,"total_score":77.89},{"rank":10,"restaurant_name":"Ohkajhu Siam Square Soi 2","location":"226 Siam Square Soi 2","avg_rating":4.5,"total_reviews":1952,"price_range":null,"cuisine_type":"Restaurant","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Ohkajhu%20Siam%20Square%20Soi%202&query_place_id=ChIJNesg_2qf4jARHW8TtkLsReA","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":23.26,"s2_group_suitability":14,"s3_price":8,"s4_travel":12,"s5_completeness":11.67,"s6_uniqueness":8,"total_score":76.93},{"rank":11,"restaurant_name":"ส้มตำนัว","location":"สยามสแควร์ ซ.5","avg_rating":3.7,"total_reviews":283,"price_range":"฿฿","cuisine_type":"อาหารอีสาน/ร้านส้มตำ","latitude":13.74,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/3611Xj-%E0%B8%AA%E0%B9%89%E0%B8%A1%E0%B8%95%E0%B8%B3%E0%B8%99%E0%B8%B1%E0%B8%A7-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1%E0%B8%AA%E0%B9%81%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B9%8C-%E0%B8%8B-5","source":"Wongnai","distance_bts_m":109,"walk_minutes":1,"data_completeness":"10/12","s1_rating_review":12.51,"s2_group_suitability":11,"s3_price":15,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":10,"total_score":76.84},{"rank":12,"restaurant_name":"โค-ร-ต KORATA (Siam Square)","location":"Siam Square Soi 3","avg_rating":4.9,"total_reviews":2559,"price_range":null,"cuisine_type":"Thai","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=%E0%B9%82%E0%B8%84-%E0%B8%A3-%E0%B8%95%20KORATA%20(Siam%20Square)&query_place_id=ChIJ0xYxXwCf4jARPtJNOp_WXm8","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":24.7,"s2_group_suitability":16,"s3_price":8,"s4_travel":12,"s5_completeness":11.67,"s6_uniqueness":4,"total_score":76.37},{"rank":13,"restaurant_name":"Jaguemsong Siam Square One","location":"388 ชั้น 5 ห้องเลขที่ ss5016 อาคารสยามสแควร์วัน, ิ","avg_rating":4.9,"total_reviews":3474,"price_range":null,"cuisine_type":"Korean","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Jaguemsong%20Siam%20Square%20One&query_place_id=ChIJI9ZH5vGf4jAR4EfOG4k_M8c","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":24.7,"s2_group_suitability":18,"s3_price":8,"s4_travel":8,"s5_completeness":11.67,"s6_uniqueness":6,"total_score":76.37},{"rank":14,"restaurant_name":"Cheese Owl Buffet Siam Square One","location":"Unit #SS 5027 - 28 - 29, 5th Floor, 388 Rama I Rd","avg_rating":4.8,"total_reviews":4913,"price_range":null,"cuisine_type":"Korean","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Cheese%20Owl%20Buffet%20Siam%20Square%20One&query_place_id=ChIJ3Y04EtKe4jARD_XD_czJlmI","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":24.4,"s2_group_suitability":18,"s3_price":8,"s4_travel":8,"s5_completeness":11.67,"s6_uniqueness":6,"total_score":76.07},{"rank":15,"restaurant_name":"Somboon Seafood Siam Square One","location":"4029, Unit #SS 388, Rama I Rd","avg_rating":3.9,"total_reviews":2785,"price_range":null,"cuisine_type":"Seafood","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Somboon%20Seafood%20Siam%20Square%20One&query_place_id=ChIJT_Z2DdKe4jARDkxjIwq0bfM","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":21.7,"s2_group_suitability":18,"s3_price":8,"s4_travel":8,"s5_completeness":11.67,"s6_uniqueness":8,"total_score":75.37},{"rank":16,"restaurant_name":"Inter Restaurants","location":"432/1-2 Siam Square 9 Alley","avg_rating":4.4,"total_reviews":3031,"price_range":null,"cuisine_type":"Thai","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Inter%20Restaurants&query_place_id=ChIJV1UGZABiHTERoiXISIWa6-o","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":23.2,"s2_group_suitability":16,"s3_price":8,"s4_travel":12,"s5_completeness":11.67,"s6_uniqueness":4,"total_score":74.87},{"rank":17,"restaurant_name":"Bankara Ramen","location":"Siam Paragon","avg_rating":3.7,"total_reviews":378,"price_range":"฿฿฿","cuisine_type":"ราเมง","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/142841RA-bankara-ramen-siam-paragon","source":"Wongnai","distance_bts_m":69,"walk_minutes":1,"data_completeness":"10/12","s1_rating_review":12.99,"s2_group_suitability":11,"s3_price":13,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":8,"total_score":73.32},{"rank":18,"restaurant_name":"ThongSmith","location":"Siam Paragon ชั้น G","avg_rating":4.1,"total_reviews":141,"price_range":"฿฿฿","cuisine_type":"ก๋วยเตี๋ยว","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/429765ip-thongsmith-siam-paragon-%E0%B8%8A%E0%B8%B1%E0%B9%89%E0%B8%99-g","source":"Wongnai","distance_bts_m":140,"walk_minutes":2,"data_completeness":"10/12","s1_rating_review":13,"s2_group_suitability":10,"s3_price":13,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":8,"total_score":72.33},{"rank":19,"restaurant_name":"Four Seasons Chinese Restaurant","location":"สยามพารากอน (Siam Paragon)","avg_rating":3.9,"total_reviews":260,"price_range":"฿฿฿฿","cuisine_type":"อาหารจีน","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/11396yD-four-seasons-chinese-restaurant-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1%E0%B8%9E%E0%B8%B2%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%AD%E0%B8%99-siam-paragon","source":"Wongnai","distance_bts_m":129,"walk_minutes":2,"data_completeness":"10/12","s1_rating_review":13,"s2_group_suitability":14,"s3_price":7,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":10,"total_score":72.33},{"rank":20,"restaurant_name":"The Square","location":"NOVOTEL BANGKOK, 392 44 Rama I Rd","avg_rating":4.7,"total_reviews":1481,"price_range":null,"cuisine_type":"Seafood","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=The%20Square&query_place_id=ChIJi_GPHtKe4jAR_suxjdX48jA","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":21.51,"s2_group_suitability":15,"s3_price":8,"s4_travel":8,"s5_completeness":11.67,"s6_uniqueness":8,"total_score":72.18},{"rank":21,"restaurant_name":"Nara Thai Cuisine Siam Paragon","location":"991 Rama I Rd","avg_rating":4.7,"total_reviews":2463,"price_range":null,"cuisine_type":"Thai","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Nara%20Thai%20Cuisine%20Siam%20Paragon&query_place_id=ChIJydbe6c2e4jARwqxg9p3rK9Y","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":24.1,"s2_group_suitability":16,"s3_price":8,"s4_travel":8,"s5_completeness":11.67,"s6_uniqueness":4,"total_score":71.77},{"rank":22,"restaurant_name":"ไทยไทย","location":"MBK","avg_rating":4.1,"total_reviews":132,"price_range":"฿฿฿","cuisine_type":"สตรีทฟู้ด/รถเข็น","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/465872aC-%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B9%84%E0%B8%97%E0%B8%A2-mbk","source":"Wongnai","distance_bts_m":408,"walk_minutes":5,"data_completeness":"10/12","s1_rating_review":12.96,"s2_group_suitability":10,"s3_price":13,"s4_travel":12,"s5_completeness":13.33,"s6_uniqueness":10,"total_score":71.29},{"rank":23,"restaurant_name":"Shinkanzen Sushi","location":"สยาม สเเควร์","avg_rating":4,"total_reviews":186,"price_range":"฿฿","cuisine_type":"อาหารญี่ปุ่น","latitude":13.74,"longitude":100.54,"google_url":"https://www.google.com/maps/search/?api=1&query=Shinkanzen%20Omakase%20Siam%20Square&query_place_id=ChIJ9xUwnAWf4jAREngsg5G9zGw","wongnai_url":"https://www.wongnai.com/restaurants/342454vZ-shinkanzen-sushi-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1-%E0%B8%AA%E0%B9%80%E0%B9%80%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B9%8C","source":"Wongnai + Google Maps","distance_bts_m":180,"walk_minutes":2,"data_completeness":"12/12","s1_rating_review":12.93,"s2_group_suitability":9,"s3_price":15,"s4_travel":15,"s5_completeness":15,"s6_uniqueness":4,"total_score":70.93},{"rank":24,"restaurant_name":"Yuzu Ramen ゆずラーメン","location":"สยามสแควร์ ซอย 3","avg_rating":3.8,"total_reviews":225,"price_range":"฿฿฿","cuisine_type":"ราเมง","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/346635MI-yuzu-ramen-%E3%82%86%E3%81%9A%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%B3-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1%E0%B8%AA%E0%B9%81%E0%B8%84%E0%B8%A7%E0%B8%A3%E0%B9%8C-%E0%B8%8B%E0%B8%AD%E0%B8%A2-3","source":"Wongnai","distance_bts_m":185,"walk_minutes":2,"data_completeness":"10/12","s1_rating_review":12.53,"s2_group_suitability":9,"s3_price":13,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":8,"total_score":70.86},{"rank":25,"restaurant_name":"Ohkajhu Siam Square One","location":"Unit #SS 3009, 388 Rama I Rd","avg_rating":4.4,"total_reviews":1591,"price_range":null,"cuisine_type":"Restaurant","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Ohkajhu%20Siam%20Square%20One&query_place_id=ChIJV157mDGZ4jARrvO4db7HAvw","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":21.16,"s2_group_suitability":14,"s3_price":8,"s4_travel":8,"s5_completeness":11.67,"s6_uniqueness":8,"total_score":70.83},{"rank":26,"restaurant_name":"Tonkatsu Wako","location":"Siam Center","avg_rating":4.2,"total_reviews":171,"price_range":"฿฿฿","cuisine_type":"อาหารญี่ปุ่น","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/267366wA-tonkatsu-wako-siam-center","source":"Wongnai","distance_bts_m":183,"walk_minutes":2,"data_completeness":"10/12","s1_rating_review":13.46,"s2_group_suitability":12,"s3_price":13,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":4,"total_score":70.79},{"rank":27,"restaurant_name":"On the Table","location":"Siam Center ชั้น2","avg_rating":3.8,"total_reviews":181,"price_range":"฿฿฿","cuisine_type":"อาหารฟิวชั่น","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/onthetable-siamcenter","source":"Wongnai","distance_bts_m":129,"walk_minutes":2,"data_completeness":"10/12","s1_rating_review":12.3,"s2_group_suitability":13,"s3_price":13,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":4,"total_score":70.63},{"rank":28,"restaurant_name":"Nice Two Meat U","location":"Siam Square Soi 3","avg_rating":3.7,"total_reviews":193,"price_range":"฿฿฿฿","cuisine_type":"ปิ้งย่าง","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/264969IV-nice-two-meat-u-siam-square-soi-3","source":"Wongnai","distance_bts_m":136,"walk_minutes":2,"data_completeness":"10/12","s1_rating_review":12.06,"s2_group_suitability":15,"s3_price":7,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":8,"total_score":70.39},{"rank":29,"restaurant_name":"Greyhound Café","location":"Siam Center","avg_rating":3.9,"total_reviews":169,"price_range":"฿฿฿","cuisine_type":"อาหารฟิวชั่น","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/3003Nh-greyhound-caf%C3%A9-siam-center","source":"Wongnai","distance_bts_m":213,"walk_minutes":3,"data_completeness":"10/12","s1_rating_review":12.55,"s2_group_suitability":13,"s3_price":13,"s4_travel":12,"s5_completeness":13.33,"s6_uniqueness":4,"total_score":67.88},{"rank":30,"restaurant_name":"Somtam Nua","location":"392, 12-14 Rama I Rd","avg_rating":4.4,"total_reviews":3509,"price_range":null,"cuisine_type":"Thai","latitude":null,"longitude":null,"google_url":"https://www.google.com/maps/search/?api=1&query=Somtam%20Nua&query_place_id=ChIJe5jdmNeZ4jARNzb36wTdDws","wongnai_url":null,"source":"Google Maps","distance_bts_m":null,"walk_minutes":null,"data_completeness":"7/12","s1_rating_review":23.2,"s2_group_suitability":13,"s3_price":8,"s4_travel":8,"s5_completeness":11.67,"s6_uniqueness":4,"total_score":67.87},{"rank":31,"restaurant_name":"Maji Curry","location":"สยามเซ็นเตอร์","avg_rating":3.8,"total_reviews":165,"price_range":"฿฿฿","cuisine_type":"อาหารญี่ปุ่น","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/448538xg-maji-curry-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1%E0%B9%80%E0%B8%8B%E0%B9%87%E0%B8%99%E0%B9%80%E0%B8%95%E0%B8%AD%E0%B8%A3%E0%B9%8C","source":"Wongnai","distance_bts_m":181,"walk_minutes":2,"data_completeness":"10/12","s1_rating_review":12.22,"s2_group_suitability":9,"s3_price":13,"s4_travel":15,"s5_completeness":13.33,"s6_uniqueness":4,"total_score":66.55},{"rank":32,"restaurant_name":"Audrey Cafe","location":"สยามเซ็นเตอร์ ชั้น 2","avg_rating":3.8,"total_reviews":354,"price_range":"฿฿฿","cuisine_type":"อาหารฟิวชั่น","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/120719dc-audrey-cafe-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1%E0%B9%80%E0%B8%8B%E0%B9%87%E0%B8%99%E0%B9%80%E0%B8%95%E0%B8%AD%E0%B8%A3%E0%B9%8C-%E0%B8%8A%E0%B8%B1%E0%B9%89%E0%B8%99-2","source":"Wongnai","distance_bts_m":231,"walk_minutes":3,"data_completeness":"10/12","s1_rating_review":13.17,"s2_group_suitability":11,"s3_price":13,"s4_travel":12,"s5_completeness":13.33,"s6_uniqueness":4,"total_score":66.5},{"rank":33,"restaurant_name":"The Tongkeungui","location":"Siam Area","avg_rating":4,"total_reviews":170,"price_range":"฿฿฿฿","cuisine_type":"ปิ้งย่าง","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/256664GR-the-tongkeungui","source":"Wongnai","distance_bts_m":275,"walk_minutes":3,"data_completeness":"10/12","s1_rating_review":12.85,"s2_group_suitability":12,"s3_price":7,"s4_travel":12,"s5_completeness":13.33,"s6_uniqueness":8,"total_score":65.18},{"rank":34,"restaurant_name":"Tasty Congee & Noodle Wantun Shop","location":"สยามพารากอน (Siam Paragon)","avg_rating":4.1,"total_reviews":105,"price_range":"฿฿฿฿","cuisine_type":"ก๋วยเตี๋ยว","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/706759sT-tasty-congee-noodle-wantun-shop-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1%E0%B8%9E%E0%B8%B2%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%AD%E0%B8%99-siam-paragon","source":"Wongnai","distance_bts_m":267,"walk_minutes":3,"data_completeness":"10/12","s1_rating_review":12.82,"s2_group_suitability":10,"s3_price":7,"s4_travel":12,"s5_completeness":13.33,"s6_uniqueness":8,"total_score":63.15},{"rank":35,"restaurant_name":"Another Hound Café","location":"ชั้น G สยามพารากอน","avg_rating":3.9,"total_reviews":139,"price_range":"฿฿฿฿","cuisine_type":"อาหารฟิวชั่น","latitude":13.75,"longitude":100.53,"google_url":null,"wongnai_url":"https://www.wongnai.com/restaurants/251742XE-another-hound-caf%C3%A9-%E0%B8%8A%E0%B8%B1%E0%B9%89%E0%B8%99-g-%E0%B8%AA%E0%B8%A2%E0%B8%B2%E0%B8%A1%E0%B8%9E%E0%B8%B2%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%AD%E0%B8%99","source":"Wongnai","distance_bts_m":235,"walk_minutes":3,"data_completeness":"10/12","s1_rating_review":12.4,"s2_group_suitability":10,"s3_price":7,"s4_travel":12,"s5_completeness":13.33,"s6_uniqueness":4,"total_score":58.73}];
+
+let DATA = [];
+let sortKey = "total_score", sortDir = -1;
+let charts = {};
+
+const $ = s => document.querySelector(s);
+const fmt = n => n==null||isNaN(n) ? "—" : Number(n).toLocaleString("th-TH");
+const f1 = n => n==null||isNaN(n) ? "—" : Number(n).toFixed(1);
+
+function toast(msg, ok=true){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.style.borderLeftColor = ok ? "var(--jade)" : "var(--chili)";
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 3800);
+}
+
+function normalize(rows){
+  return rows.map(r=>{
+    const o = {...r};
+    o.restaurant_name = o.restaurant_name || o.title || "";
+    o.cuisine_type = o.cuisine_type || o.food_type || "N/A";
+    o.avg_rating = parseFloat(o.avg_rating ?? o.google_rating) || null;
+    o.total_reviews = parseInt(o.total_reviews ?? o.review_count) || 0;
+    o.price_range = (o.price_range||"").trim() || null;
+    if(o.walk_minutes==null && o.distance_travel_note){
+      const m = String(o.distance_travel_note).match(/~?(\d+)\s*min/);
+      if(m) o.walk_minutes = parseInt(m[1]);
+    }
+    o.walk_minutes = o.walk_minutes!=null && o.walk_minutes!=="" ? parseInt(o.walk_minutes) : null;
+    SEG_KEYS.forEach(k=>{ o[k] = parseFloat(o[k]) || 0; });
+    o.total_score = Math.round((parseFloat(o.total_score)||0)*10)/10;
+    o.rank = parseInt(o.rank) || 0;
+    o.source = o.source || "—";
+    o.google_url = o.google_url || (o.source_url && String(o.source_url).includes("google") ? o.source_url : null);
+    o.wongnai_url = o.wongnai_url || (o.source_url && String(o.source_url).includes("wongnai") ? o.source_url : null);
+    return o;
+  }).filter(o=>o.restaurant_name);
+}
+
+function stripHTML(o, w=null){
+  const total = SEG_MAX.reduce((a,b)=>a+b,0);
+  return `<span class="minibar" ${w?`style="width:${w}px"`:""} title="${SEG_KEYS.map((k,i)=>SEG_LABELS[i]+": "+f1(o[k])+"/"+SEG_MAX[i]).join("  ·  ")}">` +
+    SEG_KEYS.map((k,i)=>`<i style="width:${(o[k]/total*100)}%;background:${SEG_COLORS[i]}"></i>`).join("") + `</span>`;
+}
+
+function renderTop3(){
+  const top = [...DATA].sort((a,b)=>b.total_score-a.total_score).slice(0,3);
+  const reasons = [
+    {why:`ร้านเดียวที่ยืนยันจาก <b>2 แหล่งข้อมูลตรงกัน</b> รีวิวรวม {rev} รายการ เดินจาก BTS เพียง {walk} นาที อาหารไทยหลากเมนูแชร์กันได้ทั้งโต๊ะ`,
+     good:"ข้อมูลครบ 12/12 · ใกล้ BTS ที่สุดใน Top 3 · เหมาะกลุ่มมาก", bad:"ช่วงราคา ฿฿฿ — เฉลี่ย ~400-800/คน เกินงบขั้นต่ำเล็กน้อย"},
+    {why:`เรตติ้งสูงสุดในย่าน <b>{rating} ดาว</b> จาก {rev} รีวิว ปิ้งย่างเกาหลี+หม่าล่าทัง ตอบโจทย์มื้อทีมแบบแชร์กลาง`,
+     good:"คะแนนรีวิวแรงสุด · สไตล์อาหารเหมาะกลุ่ม 4-6 คน", bad:"พบใน Google Maps แหล่งเดียว · ข้อมูลครบ 7/12 ไม่มีช่วงราคายืนยัน"},
+    {why:`ซูชิคุณภาพใน Siam Paragon เรตติ้ง <b>{rating} ดาว</b> จาก {rev} รีวิว ทำเลห้างใหญ่นั่งสบายทั้งทีม`,
+     good:"คุณภาพวัตถุดิบเด่น · ทำเลสะดวก มีที่นั่งรองรับกลุ่ม", bad:"ราคาต่อหัวมีโอกาสเกินงบ · ข้อมูลจากแหล่งเดียว 7/12"}
+  ];
+  $("#top3Cards").innerHTML = top.map((o,i)=>{
+    const r = reasons[i] || {why:"",good:"",bad:""};
+    const why = r.why.replace("{rev}",fmt(o.total_reviews)).replace("{walk}",o.walk_minutes??"~3").replace("{rating}",f1(o.avg_rating));
+    return `<article class="card r${i+1}">
+      <span class="medal">อันดับ ${i+1}</span>
+      <h3>${o.restaurant_name}</h3>
+      <div class="meta">
+        <span class="pill">${o.cuisine_type}</span>
+        ${o.price_range?`<span class="pill">${o.price_range} · ${PRICE_LABEL[o.price_range]||""}</span>`:""}
+        ${o.walk_minutes!=null?`<span class="pill">🚶 ${o.walk_minutes} นาทีจาก BTS</span>`:""}
+        <span class="pill">★ ${f1(o.avg_rating)} · ${fmt(o.total_reviews)} รีวิว</span>
+      </div>
+      <div class="score-row">
+        <div class="ring" style="--p:${o.total_score}"><span>${f1(o.total_score)}</span><small>/100</small></div>
+        <div class="sbar">
+          <div class="strip">${SEG_KEYS.map((k,j)=>`<i style="width:${(o[k]/100*100)}%;background:${SEG_COLORS[j]}" title="${SEG_LABELS[j]}: ${f1(o[k])}"></i>`).join("")}</div>
+          <div class="legend">${SEG_LABELS.map((l,j)=>`<span><i style="background:${SEG_COLORS[j]}"></i>${l} ${f1(o[SEG_KEYS[j]])}</span>`).join("")}</div>
+        </div>
+      </div>
+      <p class="why">${why}</p>
+      <div class="tradeoff"><div class="good">${r.good}</div><div class="bad">${r.bad}</div></div>
+    </article>`;
+  }).join("");
+}
+
+function renderKPIs(){
+  $("#kpiTotal").textContent = DATA.length;
+  $("#kpiAvg").textContent = f1(DATA.reduce((s,o)=>s+o.total_score,0)/DATA.length);
+  $("#kpiTop").textContent = f1(Math.max(...DATA.map(o=>o.total_score)));
+}
+
+function srcClass(s){
+  s = String(s).toLowerCase();
+  if(s.includes("+")||s.includes("wongnai")&&s.includes("google")) return "dual";
+  return "";
+}
+function srcMatch(o, f){
+  const s = String(o.source).toLowerCase();
+  if(f==="dual") return s.includes("+");
+  if(f==="google") return s.includes("google") && !s.includes("+");
+  if(f==="wongnai") return s.includes("wongnai") && !s.includes("+");
+  return true;
+}
+
+function renderTable(){
+  const q = $("#q").value.toLowerCase();
+  const fp = $("#fPrice").value;
+  const fs = $("#fSrc").value;
+  let rows = DATA.filter(o=>
+    (!q || o.restaurant_name.toLowerCase().includes(q) || String(o.cuisine_type).toLowerCase().includes(q)) &&
+    (!fp || o.price_range===fp) &&
+    srcMatch(o, fs)
+  );
+  rows.sort((a,b)=>{
+    let x=a[sortKey], y=b[sortKey];
+    if(typeof x==="string") return sortDir * String(x).localeCompare(String(y),"th");
+    return sortDir * ((x??-1)-(y??-1));
+  });
+  $("#tbody").innerHTML = rows.map(o=>`<tr>
+    <td>${o.rank}</td>
+    <td title="${o.location_address||o.location||""}">${o.restaurant_name}</td>
+    <td>${o.cuisine_type}</td>
+    <td>★ ${f1(o.avg_rating)}</td>
+    <td>${fmt(o.total_reviews)}</td>
+    <td>${o.price_range?o.price_range+" · "+(PRICE_LABEL[o.price_range]||""):"—"}</td>
+    <td>${o.walk_minutes??"—"}</td>
+    <td>${stripHTML(o)}</td>
+    <td class="score">${f1(o.total_score)}</td>
+    <td><span class="src-tag ${srcClass(o.source)}">${String(o.source).includes("+")?"2 แหล่ง":String(o.source).split("/")[0].trim()}</span></td>
+    <td>${o.google_url?`<a href="${o.google_url}" target="_blank">แผนที่</a>`:""}${o.google_url&&o.wongnai_url?" · ":""}${o.wongnai_url?`<a href="${o.wongnai_url}" target="_blank">Wongnai</a>`:""}</td>
+  </tr>`).join("");
+  $("#countNote").textContent = `แสดง ${rows.length} จาก ${DATA.length} ร้าน`;
+}
+
+function buildCharts(){
+  Object.values(charts).forEach(c=>c.destroy());
+  Chart.defaults.color = "#a898ae";
+  Chart.defaults.font.family = "'Sarabun', sans-serif";
+  Chart.defaults.borderColor = "rgba(58,44,64,.6)";
+
+  const top10 = [...DATA].sort((a,b)=>b.total_score-a.total_score).slice(0,10);
+  charts.top10 = new Chart($("#chTop10"),{
+    type:"bar",
+    data:{labels:top10.map(o=>o.restaurant_name.length>22?o.restaurant_name.slice(0,21)+"…":o.restaurant_name),
+      datasets:SEG_KEYS.map((k,i)=>({label:SEG_LABELS[i],data:top10.map(o=>o[k]),backgroundColor:SEG_COLORS[i],stack:"s",borderRadius:i===5?5:0}))},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10}}},
+      scales:{x:{stacked:true,max:100,grid:{color:"rgba(58,44,64,.4)"}},y:{stacked:true,grid:{display:false}}}}
+  });
+
+  const prices = {};
+  DATA.forEach(o=>{const p=o.price_range||"ไม่ระบุ";prices[p]=(prices[p]||0)+1;});
+  charts.price = new Chart($("#chPrice"),{
+    type:"doughnut",
+    data:{labels:Object.keys(prices).map(p=>PRICE_LABEL[p]?p+" · "+PRICE_LABEL[p]:p),datasets:[{data:Object.values(prices),backgroundColor:["#f2b53d","#e8503f","#b08ae8","#46c98e","#6ec1e4","#7c6d83"],borderColor:"#211826",borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{position:"bottom",labels:{boxWidth:10}}}}
+  });
+
+  const cs = {};
+  DATA.forEach(o=>{const c=o.cuisine_type||"N/A";cs[c]=(cs[c]||0)+1;});
+  const topC = Object.entries(cs).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  charts.cuisine = new Chart($("#chCuisine"),{
+    type:"bar",
+    data:{labels:topC.map(e=>e[0].length>18?e[0].slice(0,17)+"…":e[0]),datasets:[{data:topC.map(e=>e[1]),backgroundColor:"#f2b53d",borderRadius:6,maxBarThickness:26}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:"rgba(58,44,64,.4)"},ticks:{precision:0}},y:{grid:{display:false}}}}
+  });
+}
+
+function renderAll(){
+  renderKPIs(); renderTop3(); renderTable(); buildCharts();
+}
+
+/* CSV parser รองรับ quoted fields */
+function parseCSV(text){
+  const rows=[]; let row=[], cur="", inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else inQ=false; }
+      else cur+=c;
+    } else {
+      if(c==='"') inQ=true;
+      else if(c===","){row.push(cur);cur="";}
+      else if(c==="\n"||c==="\r"){ if(c==="\r"&&text[i+1]==="\n")i++; row.push(cur);cur=""; if(row.some(x=>x!=="")) rows.push(row); row=[]; }
+      else cur+=c;
+    }
+  }
+  if(cur!==""||row.length){row.push(cur);if(row.some(x=>x!==""))rows.push(row);}
+  return rows;
+}
+
+async function refreshFromSheets(){
+  const btn=$("#btnRefresh"); btn.disabled=true; btn.textContent="⏳ กำลังดึงข้อมูล…";
+  try{
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&_=${Date.now()}`;
+    const res=await fetch(url);
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const text=await res.text();
+    const rows=parseCSV(text);
+    if(rows.length<2) throw new Error("ไม่มีข้อมูลใน Scoring Data");
+    const headers=rows[0].map(h=>h.trim());
+    const objs=rows.slice(1).map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]])));
+    const norm=normalize(objs);
+    if(norm.length===0) throw new Error("parse แล้วไม่พบร้าน");
+    DATA=norm;
+    $("#dataMode").textContent=`Google Sheets (live · ${norm.length} ร้าน)`;
+    $("#lastUpdated").textContent=new Date().toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"});
+    renderAll();
+    toast(`ดึงข้อมูลสำเร็จ — ${norm.length} ร้านจาก Google Sheets`);
+  }catch(e){
+    console.error(e);
+    toast("ดึงข้อมูลสดไม่สำเร็จ ("+e.message+") — ใช้ข้อมูล snapshot ต่อ", false);
+  }finally{
+    btn.disabled=false; btn.textContent="⟳ ดึงข้อมูลล่าสุดจาก Google Sheets";
+  }
+}
+
+/* events */
+$("#btnRefresh").addEventListener("click", refreshFromSheets);
+["q","fPrice","fSrc"].forEach(id=>$("#"+id).addEventListener("input", renderTable));
+document.querySelectorAll("thead th[data-k]").forEach(th=>{
+  th.addEventListener("click",()=>{
+    const k=th.dataset.k;
+    if(sortKey===k) sortDir*=-1; else {sortKey=k;sortDir=k==="restaurant_name"||k==="cuisine_type"?1:-1;}
+    document.querySelectorAll("thead .arr").forEach(a=>a.textContent="");
+    th.querySelector(".arr").textContent = sortDir===-1?" ▾":" ▴";
+    renderTable();
+  });
+});
+
+/* init */
+DATA = normalize(EMBEDDED);
+renderAll();
+</script>
+</body>
+</html>
